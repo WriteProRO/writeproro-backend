@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3001;
 
 // Initialize OpenAI
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY || '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',
 });
 
 // Security middleware
@@ -25,11 +25,17 @@ const limiter = rateLimit({
 app.use('/api/', limiter);
 
 // CORS configuration
-const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'];
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
+  'http://localhost:3000',
+  'file://',
+  'https://writeproro-frontend.vercel.app',
+  '*'  // Allow all origins for now - restrict in production
+];
 app.use(cors({
-  origin: allowedOrigins,
-  methods: ['POST'],
-  allowedHeaders: ['Content-Type'],
+  origin: true, // Allow all origins for local HTML files
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: false
 }));
 
 app.use(express.json({ limit: '10mb' }));
@@ -152,6 +158,9 @@ app.listen(PORT, () => {
   console.log(`WriteProRO Backend Server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`OpenAI API Key configured: ${process.env.OPENAI_API_KEY ? 'Yes' : 'No'}`);
+  if (process.env.OPENAI_API_KEY) {
+    console.log(`API Key starts with: ${process.env.OPENAI_API_KEY.substring(0, 7)}...`);
+  }
 });
 
 module.exports = app;
